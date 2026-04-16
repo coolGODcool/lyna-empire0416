@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shop } from '../types';
-import { ArrowLeft, Star, MapPin, Clock, MessageSquare, Calendar, ChevronRight, Info } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Clock, MessageSquare, Calendar, ChevronRight, Info, Share2, Heart, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface ShopDetailsProps {
@@ -14,60 +14,71 @@ export function ShopDetails({ shop, onBack, onBook, onChat }: ShopDetailsProps) 
   return (
     <div className="flex flex-col min-h-full pb-20 bg-zinc-950">
       {/* Header Image */}
-      <div className="relative h-64">
+      <div className="relative h-72">
         <img src={shop.thumbnailUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-black/60 shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-black/20 backdrop-brightness-75 pointer-events-none" />
+        
         <button
           onClick={onBack}
-          className="absolute top-12 left-6 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-gold-500/30 flex items-center justify-center text-gold-500 active:scale-90 transition-transform"
+          className="absolute top-12 left-6 w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white active:scale-90 transition-transform shadow-2xl"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={22} />
         </button>
-        <div className="absolute bottom-6 left-6 text-xl font-serif font-black text-gold-500 italic uppercase tracking-tighter drop-shadow-lg">
-          {shop.name} EMPIRE
+
+        <div className="absolute top-12 right-6 flex space-x-2">
+           <button className="w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white active:scale-90 transition-transform">
+             <Share2 size={20} />
+           </button>
+           <button className="w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white active:scale-90 transition-transform">
+             <Heart size={20} />
+           </button>
+        </div>
+
+        <div className="absolute bottom-8 left-6 right-6">
+           <div className="flex items-center space-x-2 mb-2">
+              <span className="bg-gold-500 text-black text-[9px] font-black px-2 py-0.5 rounded tracking-widest uppercase">精選推薦</span>
+              <div className="bg-black/40 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 flex items-center space-x-1">
+                 <Star size={10} fill="#D4AF37" className="text-gold-500" />
+                 <span className="text-[10px] font-black text-white">{shop.rating}</span>
+              </div>
+           </div>
+           <h1 className="text-3xl font-serif font-black text-white italic uppercase tracking-tighter drop-shadow-2xl">
+             {shop.name}
+           </h1>
         </div>
       </div>
 
-      {/* Info Content */}
-      <div className="px-6 -mt-10 relative z-10">
-        <div className="bg-zinc-900 border border-gold-500/20 rounded-[40px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-          <div className="flex justify-between items-start mb-2">
-            <h1 className="text-2xl font-serif font-bold text-gold-500">店家詳情</h1>
-            <div className="text-gold-100 text-sm font-bold flex items-center">
-              <Star size={14} fill="currentColor" className="mr-1 text-gold-500" />
-              {shop.rating} (2.1k 評價)
+      {/* Info Bar */}
+      <div className="px-6 py-6 border-b border-white/5 bg-zinc-900/40 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between">
+         <div className="flex items-center space-x-6">
+            <div className="flex flex-col items-center">
+               <span className="text-[10px] text-[#555] font-black uppercase tracking-widest mb-1">距離</span>
+               <span className="text-xs font-black text-gold-500 uppercase">{shop.distance}</span>
             </div>
-          </div>
-          <p className="text-[#888888] text-xs mb-6 leading-relaxed">頂級奢華體驗，從您的蒞臨開始。{shop.description}</p>
+            <div className="w-[1px] h-6 bg-white/5" />
+            <div className="flex flex-col items-center">
+               <span className="text-[10px] text-[#555] font-black uppercase tracking-widest mb-1">評分</span>
+               <span className="text-xs font-black text-gold-500 uppercase">{shop.rating}★</span>
+            </div>
+            <div className="w-[1px] h-6 bg-white/5" />
+            <div className="flex flex-col items-center">
+               <span className="text-[10px] text-[#555] font-black uppercase tracking-widest mb-1">營業</span>
+               <span className="text-xs font-black text-emerald-500 uppercase">Open</span>
+            </div>
+         </div>
+         <button onClick={onChat} className="p-3 rounded-2xl bg-gold-500 text-black shadow-lg shadow-gold-500/20 active:scale-90 transition-all">
+            <MessageSquare size={20} />
+         </button>
+      </div>
 
-          <div className="flex space-x-3 mb-6">
-            <div className="flex-1 bg-black/40 rounded-2xl p-3 border border-white/5 flex flex-col items-center justify-center space-y-1">
-              <MapPin size={16} className="text-gold-500" />
-              <span className="text-[10px] text-[#888888] font-bold">{shop.distance}</span>
-            </div>
-            <div className="flex-1 bg-black/40 rounded-2xl p-3 border border-white/5 flex flex-col items-center justify-center space-y-1">
-              <Clock size={16} className="text-gold-500" />
-              <span className="text-[10px] text-[#888888] font-bold">24H 經營</span>
-            </div>
-          </div>
-
-          <div className="flex space-x-2">
-            <button
-              onClick={onChat}
-              className="flex-1 bg-zinc-800 text-white h-12 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 active:bg-zinc-700 transition-colors border border-white/5"
-            >
-              <MessageSquare size={18} />
-              <span>問 AI 店長</span>
-            </button>
-            <button
-              onClick={onBook}
-              className="flex-1 bg-gold-500 text-black h-12 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 active:bg-gold-600 transition-colors shadow-lg"
-            >
-              <Calendar size={18} />
-              <span>預約服務</span>
-            </button>
-          </div>
-        </div>
+      {/* Menu Categories (Quick Links) */}
+      <div className="px-6 py-4 overflow-x-auto no-scrollbar flex space-x-2 border-b border-white/5 bg-zinc-950 sticky top-[73px] z-20">
+         {['熱門推薦', '帝國特選', '極致放鬆', '常見問題'].map((cat, i) => (
+           <button key={cat} className={`whitespace-nowrap px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${i === 0 ? 'bg-gold-500 text-black border-gold-500' : 'bg-transparent text-[#888888] border-white/10 hover:border-white/20'}`}>
+             {cat}
+           </button>
+         ))}
       </div>
 
       {/* Services Menu */}
