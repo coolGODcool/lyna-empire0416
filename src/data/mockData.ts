@@ -8,8 +8,14 @@ export const MOCK_SHOPS: Shop[] = [
     description: 'Aurelia Spa 結合古希臘療神學與現代生物科技，為您提供最極致的放鬆體驗。在金碧輝煌的寧靜空間中，找回您遺失的元氣。',
     tags: ['按摩', 'SPA', '香氛', '放鬆', '奢華'],
     rating: 4.9,
+    reviewCount: 2150,
     distance: '0.8 km',
     popularity: 1280,
+    isOfficial: true,
+    comments: [
+      { id: 'c1', userName: '凱文', userAvatar: 'https://i.pravatar.cc/150?u=kevin', rating: 5, content: '環境真的太奢華了，服務也是一等一！', date: '2024-03-20' },
+      { id: 'c2', userName: '艾莉絲', userAvatar: 'https://i.pravatar.cc/150?u=alice', rating: 4, content: '熱石按摩非常舒服，推薦給壓力大的人。', date: '2024-03-18' }
+    ],
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-a-spa-bath-with-flowers-and-candles-1551-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1544161515-4ae6ce6db87e?q=80&w=2070&auto=format&fit=crop',
     services: [
@@ -49,8 +55,13 @@ export const MOCK_SHOPS: Shop[] = [
     description: 'Obsidian Barber 不只是理髮廳，更是男人的社交殿堂。專業極簡的技術，幫您形塑個人魅力。',
     tags: ['理容', '剪髮', '紳士', '熱門', '修容'],
     rating: 4.8,
+    reviewCount: 980,
     distance: '1.2 km',
     popularity: 856,
+    isOfficial: true,
+    comments: [
+      { id: 'c3', userName: '馬克', userAvatar: 'https://i.pravatar.cc/150?u=mark', rating: 5, content: '理髮師技術沒話說，熱烤修容必試！', date: '2024-03-15' }
+    ],
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-the-neck-of-a-client-with-a-knife-4508-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop',
     services: [
@@ -89,8 +100,13 @@ export const MOCK_SHOPS: Shop[] = [
     description: 'Midnight Brew 是一家隱身於繁華巷弄的頂級咖啡館。我們精選全球莊園級豆種，只為懂生活的您沖上一杯。',
     tags: ['咖啡', '甜點', '宵夜', '氛圍', '靜謐'],
     rating: 4.7,
+    reviewCount: 3200,
     distance: '0.5 km',
     popularity: 2100,
+    isOfficial: false,
+    comments: [
+      { id: 'c4', userName: '露西', userAvatar: 'https://i.pravatar.cc/150?u=lucy', rating: 5, content: '拿鐵的金箔真的很有質感，甜點也很好吃。', date: '2024-03-19' }
+    ],
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barista-making-a-latte-in-a-coffee-cup-4318-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=2070&auto=format&fit=crop',
     services: [
