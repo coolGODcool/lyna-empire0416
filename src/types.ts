@@ -17,6 +17,15 @@ export interface OpeningHour {
   hours: string;
 }
 
+export interface Comment {
+  id: string;
+  userName: string;
+  userAvatar: string;
+  rating: number;
+  content: string;
+  date: string;
+}
+
 export interface Shop {
   id: string;
   name: string;
@@ -24,6 +33,7 @@ export interface Shop {
   description: string;
   tags: string[];
   rating: number;
+  reviewCount: number;
   distance: string;
   popularity: number;
   videoUrl: string;
@@ -34,6 +44,8 @@ export interface Shop {
   transportation: string;
   notices: string[];
   faqs: FAQ[];
+  comments: Comment[];
+  isOfficial?: boolean;
 }
 
 export interface Booking {
