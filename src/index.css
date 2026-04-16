@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Georgia", serif;
+  
+  --color-gold-50: #FFF9E6;
+  --color-gold-100: #F9E29C; /* Gold Light */
+  --color-gold-200: #FFE680;
+  --color-gold-300: #FFD64D;
+  --color-gold-400: #FFCC1A;
+  --color-gold-500: #D4AF37; /* Standard Gold */
+  --color-gold-600: #996515; /* Gold Dark */
+  --color-gold-700: #786320;
+  --color-gold-800: #4B3E14;
+  --color-gold-900: #1D1808;
+
+  --color-zinc-950: #050505; /* BG Black */
+  --color-zinc-900: #121212; /* Card Black */
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-[#E5E5E5] antialiased overflow-hidden;
+    font-family: var(--font-sans);
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+  }
+
+  h1, h2, h3, .font-title {
+    font-family: var(--font-serif);
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
