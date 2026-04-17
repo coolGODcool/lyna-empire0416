@@ -11,8 +11,14 @@ interface ShopDetailsProps {
 }
 
 export function ShopDetails({ shop, onBack, onBook, onChat }: ShopDetailsProps) {
+  const weekDays = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
+  const weeklyHours = weekDays.map((day) => {
+    const matched = shop.openingHours.find((item) => item.day.includes(day));
+    return { day, hours: matched?.hours ?? '公休/依店家公告' };
+  });
+
   return (
-    <div className="flex flex-col min-h-full pb-20 bg-zinc-950">
+    <div className="flex flex-col min-h-full pb-24 bg-zinc-950">
       {/* Header Image */}
       <div className="relative h-72">
         <img src={shop.thumbnailUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -135,6 +141,18 @@ export function ShopDetails({ shop, onBack, onBook, onChat }: ShopDetailsProps) 
           </div>
         </section>
 
+        <section>
+          <h3 className="text-white font-bold mb-4">一到日營業時間</h3>
+          <div className="bg-white/5 rounded-2xl p-5 space-y-3">
+            {weeklyHours.map((item) => (
+              <div key={item.day} className="flex items-center justify-between text-sm">
+                <span className="text-zinc-400">{item.day}</span>
+                <span className="text-gold-300 font-semibold">{item.hours}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Notices */}
         <section>
           <h3 className="text-white font-bold mb-4">注意事項</h3>
@@ -163,7 +181,8 @@ export function ShopDetails({ shop, onBack, onBook, onChat }: ShopDetailsProps) 
       </div>
 
       {/* Floating Action Bar */}
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 flex space-x-2 z-30">
+      <div className="sticky bottom-0 w-full p-4 bg-zinc-950/90 backdrop-blur-xl border-t border-white/5 flex justify-center z-30">
+        <div className="w-full max-w-md flex space-x-2">
         <button
           onClick={onBack}
           className="w-14 h-14 rounded-2xl bg-white/5 text-white flex items-center justify-center active:bg-white/10"
@@ -176,6 +195,7 @@ export function ShopDetails({ shop, onBack, onBook, onChat }: ShopDetailsProps) 
         >
           立即奢華預約
         </button>
+        </div>
       </div>
     </div>
   );

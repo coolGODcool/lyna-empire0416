@@ -12,12 +12,29 @@ export function VideoFeed() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const lastSwitchAtRef = useRef(0);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    if (now - lastSwitchAtRef.current < 450) return;
+
     const target = e.currentTarget;
-    const index = Math.round(target.scrollTop / target.clientHeight);
-    if (index !== currentIndex && index < MOCK_SHOPS.length) {
+    const sectionHeight = target.clientHeight;
+    const scrollTop = target.scrollTop;
+    const deltaFromCurrent = scrollTop - currentIndex * sectionHeight;
+    const triggerDistance = sectionHeight * 0.42;
+    let index = currentIndex;
+
+    if (deltaFromCurrent > triggerDistance && currentIndex < MOCK_SHOPS.length - 1) {
+      index = currentIndex + 1;
+    } else if (deltaFromCurrent < -triggerDistance && currentIndex > 0) {
+      index = currentIndex - 1;
+    }
+
+    if (index !== currentIndex) {
       setCurrentIndex(index);
+      lastSwitchAtRef.current = now;
+      target.scrollTo({ top: index * sectionHeight, behavior: 'smooth' });
     }
   };
 
@@ -28,7 +45,7 @@ export function VideoFeed() {
       className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black"
     >
       {MOCK_SHOPS.map((shop, index) => (
-        <div key={shop.id} className="h-full w-full snap-start relative">
+        <div key={shop.id} className="h-full w-full snap-start snap-always relative">
           <ShopCard 
             shop={shop} 
             isActive={currentIndex === index} 
@@ -66,6 +83,9 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
   const fadeOutTimer = useRef<NodeJS.Timeout | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   useEffect(() => {
     const handleInactivity = () => {
@@ -120,19 +140,67 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
 
   const topSeller = shop.services[0];
   const currentVideoItem = shop.services[1] ?? shop.services[0];
+  const industryLabel = shop.tags[0] ?? '服務業';
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = isMuted;
+
+    if (isActive && !isPaused && view === 'video') {
+      void video.play().catch(() => {
+        // Ignore autoplay blocks; user interaction can start playback.
+      });
+    } else {
+      video.pause();
+    }
+  }, [isActive, isPaused, isMuted, view]);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null;
+    touchStartY.current = e.touches[0]?.clientY ?? null;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const endX = e.changedTouches[0]?.clientX ?? touchStartX.current;
+    const endY = e.changedTouches[0]?.clientY ?? touchStartY.current;
+    const diffX = endX - touchStartX.current;
+    const diffY = endY - touchStartY.current;
+
+    // Horizontal swipe switches between short video and menu page.
+    if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX < 0) setView('details');
+      if (diffX > 0) setView('video');
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
 
   return (
-    <div className="h-full w-full relative overflow-hidden bg-zinc-950 md:rounded-[28px]" onClick={handleInteraction}>
+    <div
+      className="h-full w-full relative overflow-hidden bg-zinc-950 md:rounded-[28px]"
+      onClick={handleInteraction}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <motion.div
         className="flex h-full w-[200%] absolute top-0 left-0"
         animate={{ x: view === 'video' ? '0%' : '-50%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 180 }}
       >
         <div className={`h-full relative overflow-hidden transition-all duration-500 ${view === 'video' ? 'w-[50%]' : 'w-1/2'}`}>
-          <motion.div
+          <motion.video
+            ref={videoRef}
+            src={shop.videoUrl}
+            loop
+            playsInline
+            muted={isMuted}
+            poster={shop.thumbnailUrl}
             animate={{ opacity: sectionOpacity('middle') }}
             transition={{ duration: 0.6 }}
-            className="w-full h-full bg-black"
+            className="w-full h-full object-cover bg-black"
             onClick={(e) => {
               e.stopPropagation();
               handleInteraction();
@@ -148,33 +216,33 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                   <button
                     ref={menuButtonRef}
                     onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); handleInteraction(); }}
-                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20 active:scale-95 transition-transform"
+                    className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-gold-200 active:scale-95 transition-transform drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]"
                   >
                     <Menu size={20} />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInteraction(); }}
-                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20 active:scale-95 transition-transform"
+                    className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-gold-200 active:scale-95 transition-transform drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]"
                   >
                     <Search size={20} />
                   </button>
-                  <div className="h-8 w-8 rounded-full bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400">
+                  <div className="h-8 w-8 rounded-full bg-transparent flex items-center justify-center text-gold-200 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]">
                     <Crown size={14} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-black tracking-wide text-gold-400">凱文</p>
-                    <p className="text-[9px] text-white/70 truncate">LV.18 領主學徒</p>
+                    <p className="text-[11px] font-black tracking-wide text-gold-200 drop-shadow-[0_3px_10px_rgba(0,0,0,0.8)]">凱文</p>
+                    <p className="text-[9px] text-white/85 truncate drop-shadow-[0_3px_10px_rgba(0,0,0,0.8)]">LV.18 領主學徒</p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={(e) => { e.stopPropagation(); setIsPaused(!isPaused); handleInteraction(); }}
-                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20"
+                    className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-gold-200 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]"
                   >
                     {isPaused ? <Play size={20} /> : <Pause size={20} />}
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); onToggleMute(); handleInteraction(); }} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20">
+                  <button onClick={(e) => { e.stopPropagation(); onToggleMute(); handleInteraction(); }} className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-gold-200 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]">
                     {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                   </button>
                 </div>
@@ -187,7 +255,7 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="absolute top-16 left-4 z-50 w-[250px] rounded-2xl border border-gold-500/30 bg-black/85 backdrop-blur-xl p-4 text-white shadow-2xl"
+                className="absolute top-16 left-4 z-50 w-[250px] rounded-2xl border border-white/10 bg-black/35 backdrop-blur-sm p-4 text-white shadow-2xl"
               >
                 <h4 className="text-xs font-black text-gold-400 uppercase tracking-wider mb-3">首頁控制</h4>
                 <p className="text-[11px] text-white/75 mb-2">3 秒後淡出區塊</p>
@@ -230,26 +298,26 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                 <motion.div
                   animate={{ opacity: sectionOpacity('bottom') }}
                   transition={{ duration: 0.6 }}
-                  className="pointer-events-auto max-w-[320px] rounded-2xl border border-white/15 bg-black/55 backdrop-blur-md p-3"
+                  className="pointer-events-auto max-w-[360px] rounded-2xl bg-transparent p-0"
                 >
                   <button
                     onClick={(e) => { e.stopPropagation(); setIsInfoExpanded(!isInfoExpanded); }}
-                    className="w-full"
+                    className="w-full text-left"
                   >
                     <div className="flex items-center gap-3">
-                      <img src={shop.thumbnailUrl} className="w-12 h-12 rounded-xl object-cover border border-white/20" referrerPolicy="no-referrer" />
+                      <img src={shop.thumbnailUrl} className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-[0_8px_24px_rgba(0,0,0,0.45)]" referrerPolicy="no-referrer" />
                       <div className="flex flex-wrap gap-1.5 text-left">
                         <InfoChip icon={<Star size={10} className="text-gold-500" />} text={`評價 ${shop.rating}`} compact />
                         <InfoChip icon={<MapPin size={10} className="text-gold-500" />} text={`距離 ${shop.distance}`} compact />
-                        <InfoChip icon={<ArrowUpRight size={10} className="text-gold-500" />} text="食衣住行育樂" compact />
+                        <InfoChip icon={<ArrowUpRight size={10} className="text-gold-500" />} text={`${industryLabel} / 服務業`} compact />
                       </div>
                     </div>
                   </button>
                   {isInfoExpanded && (
-                    <div className="mt-3 border-t border-white/10 pt-3 text-left space-y-2">
-                      <p className="text-[11px] text-white/75 leading-relaxed">{shop.description}</p>
-                      <p className="text-[11px] text-gold-300">暢銷商品：{topSeller?.name ?? '待補資料'}</p>
-                      <p className="text-[11px] text-gold-300">本支影片商品：{currentVideoItem?.name ?? '待補資料'}</p>
+                    <div className="mt-3 rounded-xl bg-black/20 border border-white/10 backdrop-blur-[2px] p-3 text-left space-y-2">
+                      <p className="text-[11px] text-white/80 leading-relaxed">{shop.description}</p>
+                      <p className="text-[11px] text-gold-300/95">暢銷商品：{topSeller?.name ?? '待補資料'}</p>
+                      <p className="text-[11px] text-gold-300/95">本支影片商品：{currentVideoItem?.name ?? '待補資料'}</p>
                     </div>
                   )}
                 </motion.div>
@@ -266,9 +334,6 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                   onClick={(e) => { e.stopPropagation(); setIsAIChatOpen(true); }} 
                 />
                 
-                <div onClick={() => setView('details')} className="mt-1 w-11 h-11 rounded-2xl border border-gold-500/50 p-0.5 bg-black/20 shadow-[0_0_15px_rgba(212,175,55,0.4)] cursor-pointer">
-                   <img src={shop.thumbnailUrl} className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
-                </div>
               </div>
             </motion.div>
 
@@ -310,9 +375,9 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
 
 function InfoChip({ icon, text, compact }: { icon: React.ReactNode; text: string; compact?: boolean }) {
   return (
-    <div className={`flex items-center bg-black/60 backdrop-blur-md rounded-full border border-gold-500/30 space-x-1.5 ${compact ? 'px-2 py-1' : 'px-3 py-1'}`}>
+    <div className={`flex items-center bg-transparent rounded-full border-0 space-x-1.5 drop-shadow-[0_3px_8px_rgba(0,0,0,0.75)] ${compact ? 'px-0 py-0' : 'px-1 py-0.5'}`}>
       {icon}
-      <span className={`${compact ? 'text-[9px]' : 'text-[10px]'} font-black text-gold-100 tracking-tighter`}>{text}</span>
+      <span className={`${compact ? 'text-[10px]' : 'text-[11px]'} font-black text-white tracking-tight`}>{text}</span>
     </div>
   );
 }
@@ -323,10 +388,10 @@ function InteractionButton({ icon, label, isAI, onClick }: { icon: React.ReactNo
       onClick={onClick} 
       className="flex flex-col items-center group active:scale-90 transition-transform"
     >
-      <div className={`p-2 transition-all rounded-full mb-1 h-12 w-12 sm:h-[52px] sm:w-[52px] flex items-center justify-center backdrop-blur-md border ${
+      <div className={`p-2 transition-all rounded-full mb-1 h-12 w-12 sm:h-[52px] sm:w-[52px] flex items-center justify-center ${
         isAI 
-          ? 'bg-gold-500 text-black border-gold-500 shadow-[0_4px_15px_rgba(212,175,55,0.7)]' 
-          : 'bg-black/30 text-white/90 border-white/10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]'
+          ? 'bg-gold-500/70 text-black shadow-[0_4px_15px_rgba(212,175,55,0.45)]' 
+          : 'bg-transparent text-white/95 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]'
       }`}>
         {icon}
       </div>
