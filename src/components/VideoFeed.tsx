@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_SHOPS } from '../data/mockData';
 import { Shop } from '../types';
-import { Heart, MessageSquare, Share2, Bookmark, Menu, Search, Star, MapPin, ChevronRight, Volume2, VolumeX, ArrowUpRight } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Star, MapPin, Volume2, VolumeX, ArrowUpRight, Crown, Menu, Search, Pause, Play } from 'lucide-react';
 import { AIChat } from './AIChat';
 import { BookingForm } from './BookingForm';
 import { ShopDetails } from './ShopDetails';
@@ -49,12 +49,23 @@ interface ShopCardProps {
 }
 
 function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
+  type FadeSection = 'top' | 'middle' | 'bottom';
   const [view, setView] = useState<'video' | 'details'>('video');
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [fadeSections, setFadeSections] = useState<Record<FadeSection, boolean>>({
+    top: false,
+    middle: false,
+    bottom: true,
+  });
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const fadeOutTimer = useRef<NodeJS.Timeout | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const handleInactivity = () => {
@@ -63,7 +74,7 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
       
       fadeOutTimer.current = setTimeout(() => {
         if (view === 'video') setShowControls(false);
-      }, 4000);
+      }, 3000);
     };
 
     if (view === 'video' && isActive) {
@@ -82,64 +93,126 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
     if (fadeOutTimer.current) clearTimeout(fadeOutTimer.current);
     fadeOutTimer.current = setTimeout(() => {
       if (view === 'video') setShowControls(false);
-    }, 4000);
+    }, 3000);
   };
 
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        isMenuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [isMenuOpen]);
+
+  const sectionOpacity = (section: FadeSection) => {
+    if (!fadeSections[section]) return 1;
+    return showControls ? 1 : 0.12;
+  };
+
+  const topSeller = shop.services[0];
+  const currentVideoItem = shop.services[1] ?? shop.services[0];
+
   return (
-    <div className="h-full w-full relative overflow-hidden bg-zinc-950" onClick={handleInteraction}>
+    <div className="h-full w-full relative overflow-hidden bg-zinc-950 md:rounded-[28px]" onClick={handleInteraction}>
       <motion.div
         className="flex h-full w-[200%] absolute top-0 left-0"
         animate={{ x: view === 'video' ? '0%' : '-50%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 180 }}
       >
-        <div className={`h-full relative overflow-hidden transition-all duration-500 scale-x-105 -mx-[2.5%] ${view === 'video' ? 'w-[50%]' : 'w-1/2'}`}>
-          <video
-            src={shop.videoUrl}
-            autoPlay={isActive}
-            muted={isMuted}
-            loop
-            playsInline
-            className="w-full h-full object-cover"
+        <div className={`h-full relative overflow-hidden transition-all duration-500 ${view === 'video' ? 'w-[50%]' : 'w-1/2'}`}>
+          <div
+            className="w-full h-full bg-black"
             onClick={(e) => {
               e.stopPropagation();
               handleInteraction();
             }}
           />
 
-          <AnimatePresence>
-            {showControls && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="absolute top-0 left-0 w-full p-6 pt-12 z-40 flex items-center justify-between"
-              >
-                <div className="flex items-center space-x-3">
-                  <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20 active:scale-95 transition-transform">
+          <motion.div
+            animate={{ opacity: sectionOpacity('top') }}
+            transition={{ duration: 0.6 }}
+            className="absolute top-0 left-0 w-full px-4 py-3 sm:px-5 sm:py-4 z-40 flex items-center justify-between"
+          >
+                <div className="flex items-center gap-2 min-w-0">
+                  <button
+                    ref={menuButtonRef}
+                    onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); handleInteraction(); }}
+                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20 active:scale-95 transition-transform"
+                  >
                     <Menu size={20} />
                   </button>
-                  <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20 active:scale-95 transition-transform">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleInteraction(); }}
+                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20 active:scale-95 transition-transform"
+                  >
                     <Search size={20} />
                   </button>
+                  <div className="h-8 w-8 rounded-full bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400">
+                    <Crown size={14} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black tracking-wide text-gold-400">凱文</p>
+                    <p className="text-[9px] text-white/70 truncate">LV.18 領主學徒</p>
+                  </div>
                 </div>
 
-                <div className="flex-1 px-8 text-center max-w-[220px]">
-                   <div className="overflow-hidden whitespace-nowrap mask-linear-fade">
-                     <div className="animate-marquee inline-block text-[10px] text-gold-500 font-black uppercase tracking-[0.2em] italic">
-                       Imperial News: New Exclusive Merchant Added to the Arena! • L-COIN Point Multiplier Event Live!
-                     </div>
-                   </div>
-                   <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/40 to-transparent mt-1" />
-                </div>
-
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setIsPaused(!isPaused); handleInteraction(); }}
+                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20"
+                  >
+                    {isPaused ? <Play size={20} /> : <Pause size={20} />}
+                  </button>
                   <button onClick={(e) => { e.stopPropagation(); onToggleMute(); handleInteraction(); }} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-500 border border-gold-500/20">
                     {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                   </button>
-                  <div className="h-10 bg-black/40 backdrop-blur-md border border-gold-500/30 rounded-full px-4 flex items-center space-x-2">
-                     <span className="text-[10px] font-black text-gold-500 italic uppercase">L.COIN</span>
-                     <span className="text-sm font-black text-white">$24,500</span>
-                  </div>
+                </div>
+          </motion.div>
+
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="absolute top-16 left-4 z-50 w-[250px] rounded-2xl border border-gold-500/30 bg-black/85 backdrop-blur-xl p-4 text-white shadow-2xl"
+              >
+                <h4 className="text-xs font-black text-gold-400 uppercase tracking-wider mb-3">首頁控制</h4>
+                <p className="text-[11px] text-white/75 mb-2">3 秒後淡出區塊</p>
+                <div className="space-y-2">
+                  {(['top', 'middle', 'bottom'] as FadeSection[]).map((option) => (
+                    <label
+                      key={option}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-sm transition cursor-pointer ${
+                        fadeSections[option]
+                          ? 'bg-gold-500/20 border-gold-400/60 text-gold-300'
+                          : 'bg-white/5 border-white/10 text-white/80'
+                      }`}
+                    >
+                      {option === 'top' ? '上方' : option === 'middle' ? '中間' : '下方'}
+                      <input
+                        type="checkbox"
+                        checked={fadeSections[option]}
+                        onChange={(e) =>
+                          setFadeSections((prev) => ({
+                            ...prev,
+                            [option]: e.target.checked,
+                          }))
+                        }
+                        className="h-4 w-4 accent-amber-400"
+                      />
+                    </label>
+                  ))}
                 </div>
               </motion.div>
             )}
@@ -152,55 +225,45 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
              <div className="w-1.5 h-32 rounded-full bg-gold-400/40 blur-[1px] opacity-50 group-hover:opacity-100 transition-opacity" />
           </div>
 
-          <motion.div
-            animate={{ opacity: showControls ? 1 : 0.2 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0 flex flex-col justify-end p-6 pb-24 z-10 pointer-events-none"
-          >
+          <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6 pb-24 z-10 pointer-events-none">
             <div className="flex justify-between items-end pointer-events-auto">
-              <div className="flex-1 pr-8">
-                 <div className="flex items-center space-x-2 mb-3">
-                    <div className="flex items-center bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-gold-500/30 space-x-2">
-                       <MapPin size={10} className="text-gold-500" />
-                       <span className="text-[10px] font-black text-gold-100 uppercase tracking-tighter">距離 {shop.distance}</span>
-                    </div>
-                    <div className="flex items-center bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-gold-500/30 space-x-2">
-                       <ArrowUpRight size={10} className="text-gold-500" />
-                       <span className="text-[10px] font-black text-gold-100 uppercase tracking-tighter">好評 {shop.reviewCount}</span>
-                    </div>
-                 </div>
-
-                 <div className="flex flex-wrap gap-2 mb-4">
-                    {shop.tags.map(tag => (
-                      <span key={tag} className="text-[9px] font-black text-gold-500/80 uppercase tracking-widest bg-black/80 px-2 py-0.5 border border-gold-500/20 rounded italic">
-                        #{tag}
-                      </span>
-                    ))}
-                 </div>
-
-                 <div className="flex items-center space-x-3 mb-2">
-                    {shop.isOfficial && (
-                      <div className="w-5 h-5 bg-gold-500 rounded-full flex items-center justify-center text-black shadow-[0_0_10px_rgba(212,175,55,0.5)]">
-                        <Star size={12} fill="currentColor" />
+              <div className="flex-1 pr-4 sm:pr-8">
+                <motion.div
+                  animate={{ opacity: sectionOpacity('bottom') }}
+                  transition={{ duration: 0.6 }}
+                  className="pointer-events-auto max-w-[320px] rounded-2xl border border-white/15 bg-black/55 backdrop-blur-md p-3"
+                >
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setIsInfoExpanded(!isInfoExpanded); }}
+                    className="w-full"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src={shop.thumbnailUrl} className="w-12 h-12 rounded-xl object-cover border border-white/20" referrerPolicy="no-referrer" />
+                      <div className="flex flex-wrap gap-1.5 text-left">
+                        <InfoChip icon={<Star size={10} className="text-gold-500" />} text={`評價 ${shop.rating}`} compact />
+                        <InfoChip icon={<MapPin size={10} className="text-gold-500" />} text={`距離 ${shop.distance}`} compact />
+                        <InfoChip icon={<ArrowUpRight size={10} className="text-gold-500" />} text="食衣住行育樂" compact />
                       </div>
-                    )}
-                    <h2 className="text-3xl font-serif font-black text-white italic tracking-tighter drop-shadow-lg">
-                      {shop.name}
-                    </h2>
-                 </div>
-                 <p className="text-[#E5E5E5]/90 text-xs font-medium mb-1 drop-shadow-md max-w-[280px] leading-relaxed">
-                    {shop.tagline}
-                 </p>
-                 <p className="text-[#888888] text-[10px] font-bold drop-shadow-md uppercase italic">
-                    帝國首席認證商家 • 感受黑金般的絲滑質感
-                 </p>
+                    </div>
+                  </button>
+                  {isInfoExpanded && (
+                    <div className="mt-3 border-t border-white/10 pt-3 text-left space-y-2">
+                      <p className="text-[11px] text-white/75 leading-relaxed">{shop.description}</p>
+                      <p className="text-[11px] text-gold-300">暢銷商品：{topSeller?.name ?? '待補資料'}</p>
+                      <p className="text-[11px] text-gold-300">本支影片商品：{currentVideoItem?.name ?? '待補資料'}</p>
+                    </div>
+                  )}
+                </motion.div>
               </div>
 
-              <div className="flex flex-col space-y-6 items-center">
-                <InteractionButton icon={<Heart size={28} />} label="995" />
-                <InteractionButton icon={<Bookmark size={28} />} label="贊助" />
-                <InteractionButton icon={<MessageSquare size={28} />} label="留言" onClick={(e) => { e.stopPropagation(); setIsCommentOpen(true); }} />
-                <InteractionButton icon={<Share2 size={28} />} label="分享" />
+              <motion.div
+                animate={{ opacity: sectionOpacity('middle') }}
+                transition={{ duration: 0.6 }}
+                className="flex flex-col space-y-4 items-center"
+              >
+                <InteractionButton icon={<Heart size={24} />} label="995" />
+                <InteractionButton icon={<MessageSquare size={24} />} label="留言" onClick={(e) => { e.stopPropagation(); setIsCommentOpen(true); }} />
+                <InteractionButton icon={<Share2 size={24} />} label="分享" />
                 <InteractionButton 
                   icon={<div className="font-black text-xl italic tracking-tighter">AI</div>} 
                   label="顧問" 
@@ -208,27 +271,31 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                   onClick={(e) => { e.stopPropagation(); setIsAIChatOpen(true); }} 
                 />
                 
-                <div onClick={() => setView('details')} className="mt-4 w-12 h-12 rounded-2xl border border-gold-500/50 p-0.5 bg-black/20 shadow-[0_0_15px_rgba(212,175,55,0.4)] cursor-pointer">
+                <div onClick={() => setView('details')} className="mt-1 w-11 h-11 rounded-2xl border border-gold-500/50 p-0.5 bg-black/20 shadow-[0_0_15px_rgba(212,175,55,0.4)] cursor-pointer">
                    <img src={shop.thumbnailUrl} className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="mt-8 flex space-x-3 pointer-events-auto">
+            <motion.div
+              animate={{ opacity: sectionOpacity('bottom') }}
+              transition={{ duration: 0.6 }}
+              className="mt-6 flex space-x-3 pointer-events-auto"
+            >
                <button 
                  onClick={(e) => { e.stopPropagation(); setView('details'); }}
-                 className="flex-1 bg-black/60 backdrop-blur-xl border border-white/10 text-white h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all shadow-xl"
+                 className="flex-1 bg-black/60 backdrop-blur-xl border border-white/10 text-white h-11 sm:h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all shadow-xl"
                >
                  查看菜單
                </button>
                <button 
                  onClick={(e) => { e.stopPropagation(); setIsBookingOpen(true); }}
-                 className="flex-1 bg-gradient-to-r from-gold-600 to-gold-400 text-black h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)]"
+                 className="flex-1 bg-gradient-to-r from-gold-600 to-gold-400 text-black h-11 sm:h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)]"
                >
                  立即預約
                </button>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
 
         <div className="w-1/2 h-full bg-zinc-950 overflow-y-auto no-scrollbar">
@@ -264,13 +331,22 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
   );
 }
 
+function InfoChip({ icon, text, compact }: { icon: React.ReactNode; text: string; compact?: boolean }) {
+  return (
+    <div className={`flex items-center bg-black/60 backdrop-blur-md rounded-full border border-gold-500/30 space-x-1.5 ${compact ? 'px-2 py-1' : 'px-3 py-1'}`}>
+      {icon}
+      <span className={`${compact ? 'text-[9px]' : 'text-[10px]'} font-black text-gold-100 tracking-tighter`}>{text}</span>
+    </div>
+  );
+}
+
 function InteractionButton({ icon, label, isAI, onClick }: { icon: React.ReactNode, label: string, isAI?: boolean, onClick?: (e: React.MouseEvent) => void }) {
   return (
     <button 
       onClick={onClick} 
       className="flex flex-col items-center group active:scale-90 transition-transform"
     >
-      <div className={`p-2 transition-all rounded-full mb-1 h-12 w-12 flex items-center justify-center backdrop-blur-md border ${
+      <div className={`p-2 transition-all rounded-full mb-1 h-12 w-12 sm:h-[52px] sm:w-[52px] flex items-center justify-center backdrop-blur-md border ${
         isAI 
           ? 'bg-gold-500 text-black border-gold-500 shadow-[0_4px_15px_rgba(212,175,55,0.7)]' 
           : 'bg-black/30 text-white/90 border-white/10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]'
