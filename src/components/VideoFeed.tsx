@@ -59,7 +59,7 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
   const [fadeSections, setFadeSections] = useState<Record<FadeSection, boolean>>({
     top: false,
     middle: false,
-    bottom: true,
+    bottom: false,
   });
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -129,7 +129,9 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
         transition={{ type: 'spring', damping: 25, stiffness: 180 }}
       >
         <div className={`h-full relative overflow-hidden transition-all duration-500 ${view === 'video' ? 'w-[50%]' : 'w-1/2'}`}>
-          <div
+          <motion.div
+            animate={{ opacity: sectionOpacity('middle') }}
+            transition={{ duration: 0.6 }}
             className="w-full h-full bg-black"
             onClick={(e) => {
               e.stopPropagation();
@@ -218,15 +220,12 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
             )}
           </AnimatePresence>
 
-          <div 
-             onClick={() => setView('details')}
-             className="absolute top-1/2 right-0 w-8 h-48 bg-transparent flex items-center justify-center z-20 cursor-pointer"
-          >
-             <div className="w-1.5 h-32 rounded-full bg-gold-400/40 blur-[1px] opacity-50 group-hover:opacity-100 transition-opacity" />
-          </div>
-
           <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6 pb-24 z-10 pointer-events-none">
-            <div className="flex justify-between items-end pointer-events-auto">
+            <motion.div
+              animate={{ opacity: sectionOpacity('middle') }}
+              transition={{ duration: 0.6 }}
+              className="flex justify-between items-end pointer-events-auto"
+            >
               <div className="flex-1 pr-4 sm:pr-8">
                 <motion.div
                   animate={{ opacity: sectionOpacity('bottom') }}
@@ -256,11 +255,7 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                 </motion.div>
               </div>
 
-              <motion.div
-                animate={{ opacity: sectionOpacity('middle') }}
-                transition={{ duration: 0.6 }}
-                className="flex flex-col space-y-4 items-center"
-              >
+              <div className="flex flex-col space-y-4 items-center">
                 <InteractionButton icon={<Heart size={24} />} label="995" />
                 <InteractionButton icon={<MessageSquare size={24} />} label="留言" onClick={(e) => { e.stopPropagation(); setIsCommentOpen(true); }} />
                 <InteractionButton icon={<Share2 size={24} />} label="分享" />
@@ -274,27 +269,9 @@ function ShopCard({ shop, isActive, isMuted, onToggleMute }: ShopCardProps) {
                 <div onClick={() => setView('details')} className="mt-1 w-11 h-11 rounded-2xl border border-gold-500/50 p-0.5 bg-black/20 shadow-[0_0_15px_rgba(212,175,55,0.4)] cursor-pointer">
                    <img src={shop.thumbnailUrl} className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
                 </div>
-              </motion.div>
-            </div>
-
-            <motion.div
-              animate={{ opacity: sectionOpacity('bottom') }}
-              transition={{ duration: 0.6 }}
-              className="mt-6 flex space-x-3 pointer-events-auto"
-            >
-               <button 
-                 onClick={(e) => { e.stopPropagation(); setView('details'); }}
-                 className="flex-1 bg-black/60 backdrop-blur-xl border border-white/10 text-white h-11 sm:h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all shadow-xl"
-               >
-                 查看菜單
-               </button>
-               <button 
-                 onClick={(e) => { e.stopPropagation(); setIsBookingOpen(true); }}
-                 className="flex-1 bg-gradient-to-r from-gold-600 to-gold-400 text-black h-11 sm:h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)]"
-               >
-                 立即預約
-               </button>
+              </div>
             </motion.div>
+
           </div>
         </div>
 

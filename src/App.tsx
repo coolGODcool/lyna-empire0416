@@ -32,10 +32,10 @@ export default function App() {
   };
 
   return (
-    <div className="relative h-screen w-full bg-black overflow-hidden">
-      <div className="relative h-full w-full max-w-[560px] mx-auto md:py-3">
+    <div className="relative h-dvh w-full bg-black overflow-hidden">
+      <div className="relative h-full w-full max-w-[560px] md:max-w-none mx-auto">
       {/* Main Content Area */}
-      <main className="h-full relative overflow-hidden md:rounded-[28px] md:border md:border-white/10 md:shadow-[0_0_60px_rgba(0,0,0,0.6)]">
+      <main className="h-full relative overflow-hidden pb-20">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -51,7 +51,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="absolute bottom-0 left-0 right-0 h-[86px] bg-black/90 backdrop-blur-2xl border-t border-gold-600/20 flex items-center justify-between px-5 sm:px-6 pb-safe z-50 rounded-t-[24px] md:rounded-[20px] md:bottom-3 md:left-3 md:right-3 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+      <nav className="absolute bottom-0 left-0 right-0 h-20 bg-black/90 backdrop-blur-2xl border-t border-gold-600/20 flex items-center justify-between px-5 sm:px-6 pb-2 z-50 rounded-t-[24px] shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         <NavButton
           active={activeTab === 'explore'}
           onClick={() => setActiveTab('explore')}

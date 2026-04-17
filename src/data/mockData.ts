@@ -16,7 +16,7 @@ export const MOCK_SHOPS: Shop[] = [
       { id: 'c1', userName: '凱文', userAvatar: 'https://i.pravatar.cc/150?u=kevin', rating: 5, content: '環境真的太奢華了，服務也是一等一！', date: '2024-03-20' },
       { id: 'c2', userName: '艾莉絲', userAvatar: 'https://i.pravatar.cc/150?u=alice', rating: 4, content: '熱石按摩非常舒服，推薦給壓力大的人。', date: '2024-03-18' }
     ],
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-a-spa-bath-with-flowers-and-candles-1551-large.mp4',
+    videoUrl: '/videos/test1.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1544161515-4ae6ce6db87e?q=80&w=2070&auto=format&fit=crop',
     services: [
       {
@@ -62,7 +62,7 @@ export const MOCK_SHOPS: Shop[] = [
     comments: [
       { id: 'c3', userName: '馬克', userAvatar: 'https://i.pravatar.cc/150?u=mark', rating: 5, content: '理髮師技術沒話說，熱烤修容必試！', date: '2024-03-15' }
     ],
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barber-shaving-the-neck-of-a-client-with-a-knife-4508-large.mp4',
+    videoUrl: '/videos/test1.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop',
     services: [
       {
@@ -107,7 +107,7 @@ export const MOCK_SHOPS: Shop[] = [
     comments: [
       { id: 'c4', userName: '露西', userAvatar: 'https://i.pravatar.cc/150?u=lucy', rating: 5, content: '拿鐵的金箔真的很有質感，甜點也很好吃。', date: '2024-03-19' }
     ],
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-barista-making-a-latte-in-a-coffee-cup-4318-large.mp4',
+    videoUrl: '/videos/test1.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=2070&auto=format&fit=crop',
     services: [
       {
